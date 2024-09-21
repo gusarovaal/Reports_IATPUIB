@@ -1,0 +1,37 @@
+---
+title: "PR_1"
+format:
+  md:
+    output-file: "README.md"
+editor: visual
+---
+
+# Reports_IATPUIB
+
+## Цель работы
+
+1.  Развить практические навыки использования языка программирования R для обработки данных
+2.  Развить навыки работы в Rstudio IDE: установка пакетов работа с проектами в Rstudio настройка и работа с Git
+3.  Закрепить знания базовых типов данных языка R и простейших операций с ними
+
+## Ход работы
+
+1.  Установить интерпретатор R ![](images/1.png)
+
+2.  Установить Rstudio IDE ![](images/2.png)
+
+3.  Установить программный пакет swirl функцией R install.packages("swirl") ![](images/3.png)
+
+4.  Запустить задание с помощью swirl::swirl() ![](images/4.png)
+
+5.  Выбрать из меню курсов 1. R Programming: The basics of programming in R ![](images/5.png)
+
+6.  Запустить подкурсы и выполнить: базовые структурные блоки (Basic Building Blocks) ![](images/6.png)
+
+рабочие пространства и файлы (Workspace and Files) ![](images/7.png)
+
+последовательности чисел (Sequences of Numbers) ![](images/8.png)
+
+векторы (Vectors) ![](images/9.png)
+
+пропущенные значения (Missing Values) ![](images/10.png)
