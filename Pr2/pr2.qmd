@@ -1,0 +1,62 @@
+---
+title: "Pr2"
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+starwars
+```
+
+```{r}
+starwars %>% nrow()
+```
+
+```         
+starwars %>% ncol()
+```
+
+```{r}
+starwars %>% ncol()
+```
+
+```{r}
+starwars %>% glimpse()
+```
+
+```{r}
+length(unique(starwars$species))
+```
+
+```{r}
+starwars %>% arrange(desc(height)) %>% head(1) %>% select(name)
+```
+
+```{r}
+starwars %>% filter(height < 170)%>%
+select(name)
+```
+
+```{r}
+starwars %>% mutate("BMI" = mass/(height*height)) %>% select(name,BMI)
+```
+
+```{r}
+starwars %>% mutate(Stretching = mass/height)  %>% arrange(desc(Stretching)) %>% head(10) %>% select(name,Stretching) 
+```
+
+```{r}
+starwars %>% group_by(species) %>% filter(!is.na(birth_year)) %>% summarise(Sr = mean(birth_year)) %>% select(species, Sr) 
+```
+
+```{r}
+starwars %>% filter(!is.na(eye_color)) %>% group_by(eye_color) %>% summarise(k = n()) %>% arrange(desc(k)) %>% head(1) %>% select(eye_color)
+```
+
+```{r}
+starwars %>% mutate(l=nchar(name)) %>% group_by(species) %>% summarise(mean = mean(l)) %>% select(species,mean)
+```
