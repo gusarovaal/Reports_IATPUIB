@@ -1,0 +1,153 @@
+1.  Импорт данных
+
+    Чтение данных из csv файла, присваивая оператору Data результат работы функции read.csv. Вывод данных с помощью функции print(Data)
+
+```{r}
+Data <- read.csv('./P2_wifi_data.csv')
+print(Data) 
+```
+
+2.  Установка пакета tidyverse
+
+```{r}
+install.packages("tidyverse")
+```
+
+3.  Загрузка установленных пакетов в окружение R
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(readr)
+```
+
+```{r}
+access_points <- read.csv('./P2_wifi_data.csv')
+print(access_points)
+```
+
+```{r}
+client_requests <- read.csv('./P2_wifi_data.csv')
+head(client_requests)
+```
+
+Обработка данных точек доступа
+
+mutate_at() - применение функции к нескольким столбцам в таблице;
+
+trimws - удаление начальных и конечных пробелов в строковых значениях указанных столбцов;
+
+na_if, "" - замена пустых строк на значения NA;
+
+as.POSIXct() - преобразование First.time.seen, Last.time.seen в формат даты и времени;
+
+```{r}
+access_points <- access_points %>% 
+  mutate_at(vars(BSSID, Privacy, Cipher, Authentication, LAN.IP, ESSID), trimws) %>%
+  mutate_at(vars(BSSID, Privacy, Cipher, Authentication, LAN.IP, ESSID), na_if, "")
+client_requests <- client_requests %>% 
+  mutate_at(vars(Station.MAC, BSSID, Probed.ESSIDs), trimws) %>%
+  mutate_at(vars(Station.MAC, BSSID, Probed.ESSIDs), na_if, "")
+
+access_points$First.time.seen <- as.POSIXct(access_points$First.time.seen, format = "%Y-%m-%d %H:%M:%S")
+access_points$Last.time.seen <- as.POSIXct(access_points$Last.time.seen, format = "%Y-%m-%d %H:%M:%S")
+client_requests$First.time.seen <- as.POSIXct(client_requests$First.time.seen, format = "%Y-%m-%d %H:%M:%S")
+client_requests$Last.time.seen <- as.POSIXct(client_requests$Last.time.seen, format = "%Y-%m-%d %H:%M:%S")
+```
+
+Просмотр общей структуры данных с помощью функции glimpse()
+
+```{r}
+glimpse(access_points)
+```
+
+```{r}
+glimpse(client_requests)
+```
+
+Примение функции filter() для выборки строк, где значение атрибута Privacy - 'OPN', чтобы сосредоточиться на открытых точках доступа. Также используется unique() для удаления дубликатов.
+
+Таким образом, OpnPrivacy будет содержать только уникальные BSSID открытых точек доступа.
+
+```{r}
+OpnPrivacy <- access_points %>% filter(Privacy == 'OPN') %>% select(BSSID)
+OpnPrivacy = unique(OpnPrivacy)
+print(OpnPrivacy)
+```
+
+Функция sapply() работает со списком/вектором данных.
+
+function(mac) substr(mac, 1, 10) извлекает первые 8 символов из каждого уникального MAC-адреса.
+
+```{r}
+fabricator <- sapply(OpnPrivacy, function(mac) substr(mac, 1, 8)) %>% unique()
+
+fabricator
+```
+
+```{}
+```
+
+---
+ [1,] "E8:28:C1" - Eltex Enterprise Ltd.
+ [2,] "00:25:00" - Apple, Inc.
+ [3,] "E0:D9:E3" - Eltex Enterprise Ltd.
+ [4,] "00:26:99" - Cisco Systems, Inc
+ [5,] "02:BC:15" - Unable to retrieve manufacturer information for MAC address
+ [6,] "00:AB:0A" - Unable to retrieve manufacturer information for MAC address
+ [7,] "00:03:7A" - Taiyo Yuden Co., Ltd.
+ [8,] "00:03:7F" - Atheros Communications, Inc.
+ [9,] "00:3E:1A" - Unable to retrieve manufacturer information for MAC address
+[10,] "02:67:F1" - Unable to retrieve manufacturer information for MAC address
+[11,] "02:CF:8B" - Unable to retrieve manufacturer information for MAC address
+[12,] "00:53:7A" - Unable to retrieve manufacturer information for MAC address
+---
+
+Фильтрация поля Privacy на наличие строки 'WPA3', чтобы обнаружить точки достпа, которые защищены протоколом WPA3. После фильтрации выводится уникальеый идентификатор точки доступа и имя сети wi-fi.
+
+```{r}
+access_points %>% filter(str_detect(access_points$Privacy, 'WPA3') == TRUE) %>% select(BSSID, ESSID)
+```
+
+Создание нового столбца duration, содержащего разницу между временными метками Last.time.seen, First.time.seen, параметр высчитывается в секундах. arrange(desc(duration)) сортирует датафрейм по столбцу duration в порядке убывания. Вывод первых 10 строк duration и BSSID.
+
+```{r}
+access_points %>% mutate(duration = as.numeric(difftime(Last.time.seen, First.time.seen, units = "secs"))) %>% arrange(desc(duration)) %>% select(BSSID, duration) %>% head(10)
+```
+
+Сортировка Speed в порядке убывания с помощью arrange(desc(Speed)). Вывод BSSID и Speed.
+
+```{r}
+access_points %>% arrange(desc(Speed)) %>%  select(BSSID, Speed) %>% head(10)
+```
+
+```{r}
+access_points %>% mutate(duration = as.numeric(difftime(Last.time.seen, First.time.seen, units = "secs"))) %>% filter(as.integer(duration) != 0) %>% mutate(beacons_per_second = X..beacons / as.integer(duration)) %>% arrange(desc(beacons_per_second)) %>% select(BSSID, X..beacons, duration, beacons_per_second ) %>% head()
+```
+
+```{r}
+fabricator_client_MAC <- client_requests %>% select(BSSID) %>% filter(BSSID != "(not associated)" & !is.na(BSSID)) %>% arrange(BSSID)
+sapply(fabricator_client_MAC, function(i) substr(i, 1, 8)) %>% unique() 
+```
+
+```{r}
+non_randomized_devices <- client_requests %>% filter(!substr(Station.MAC, 2, 2) %in% c("2", "6", "A", "E"))  %>% select(Station.MAC) 
+head(non_randomized_devices)
+```
+
+```{r}
+grouped_data <- client_requests  %>%
+  group_by(Probed.ESSIDs) %>% summarize(
+    unique_devices = n_distinct(Station.MAC), 
+    first_time_seen = min(First.time.seen),  
+    last_time_seen = max(Last.time.seen)
+  )
+head(grouped_data)
+```
+
+```{r}
+client_requests %>% mutate(duration = as.integer(difftime(Last.time.seen, First.time.seen))) %>% filter(duration != 0) %>% arrange(desc(duration)) %>%  filter(!is.na(Probed.ESSIDs)) %>%  group_by(Probed.ESSIDs) %>% summarise(Mean = mean(duration), Sd = sd(duration)) %>% filter(!is.na(Sd) & Sd != 0) %>%  arrange(Sd) %>% select(Probed.ESSIDs, Mean, Sd) %>%
+  head(1)
+```
